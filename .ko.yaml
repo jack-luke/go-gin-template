@@ -1,0 +1,7 @@
+builds:
+  - id: gin
+    dir: .
+    main: .
+    ldflags:
+      - -s -w   
+      - -extldflags "-static"
