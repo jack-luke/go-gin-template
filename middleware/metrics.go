@@ -46,20 +46,16 @@ func newMetrics() *metrics {
 	}
 }
 
-// registerMetrics simply registers all required metrics with Prometheus.
-// This is called when the metrics middleware is instantiated.
-func registerMetrics(m *metrics) {
-	prometheus.MustRegister(m.RequestDuration)
-	prometheus.MustRegister(m.HTTPRequestsTotal)
-	prometheus.MustRegister(m.RequestsInFlight)
-}
-
 // PrometheusMetrics is a middleware that records HTTP metrics about requests.
 func PrometheusMetrics() gin.HandlerFunc {
 
 	// create and register Prometheus metrics
 	m := newMetrics()
-	registerMetrics(m)
+	prometheus.MustRegister(
+		m.RequestDuration,
+		m.HTTPRequestsTotal,
+		m.RequestsInFlight,
+	)
 
 	return func(c *gin.Context) {
 		start := time.Now()
