@@ -78,6 +78,8 @@ HTTP requests are logged with the following fields:
 | `error` | string | The error message, if there was one. | "Error #01: MQTT broker not connected\n" |
 
 ### Metrics
+Prometheus metrics are recorded using the default registry.
+
 | Name | Type | Labels | Description |
 | --- | --- | --- | --- |
 | `http_requests_total` | Counter | method, route, status | Total number of HTTP requests. |
