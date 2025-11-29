@@ -86,6 +86,18 @@ Prometheus metrics are recorded using the default registry.
 | `http_request_duration_seconds` | Histogram | method, route, status | HTTP request duration in seconds. |
 | `http_in_flight_requests` | Gauge | | Number of requests currently being handled by the service. |
 
+#### Using a Non-default Registry
+```go
+// create new registry
+reg := prometheus.NewRegistry()
+
+// pass the registerer to the middleware
+r.Use(middleware.PrometheusMetrics(reg))
+
+// attach the registry to the metrics endpoint
+r.GET("/metrics", gin.WrapH(promhttp.HandlerFor(reg, promhttp.HandlerOpts{})))
+```
+
 ## Authors
 
 * Jack Luke

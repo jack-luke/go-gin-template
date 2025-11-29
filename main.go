@@ -29,7 +29,7 @@ func main() {
 	r.Use(gin.Recovery())
 	r.Use(middleware.Slogger(logger))
 	r.Use(middleware.SecurityHeaders)
-	r.Use(middleware.PrometheusMetrics())
+	r.Use(middleware.PrometheusMetrics(nil))
 	r.Use(middleware.ErrorHandler)
 
 	// Prometheus metrics endpoint

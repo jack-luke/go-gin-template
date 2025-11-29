@@ -47,11 +47,15 @@ func newMetrics() *metrics {
 }
 
 // PrometheusMetrics is a middleware that records HTTP metrics about requests.
-func PrometheusMetrics() gin.HandlerFunc {
+func PrometheusMetrics(reg prometheus.Registerer) gin.HandlerFunc {
+	// Fall back to default registerer if one is not provided
+	if reg == nil {
+		reg = prometheus.DefaultRegisterer
+	}
 
 	// create and register Prometheus metrics
 	m := newMetrics()
-	prometheus.MustRegister(
+	reg.MustRegister(
 		m.RequestDuration,
 		m.HTTPRequestsTotal,
 		m.RequestsInFlight,
