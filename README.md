@@ -20,6 +20,7 @@ See [Gin Docs - Examples](https://gin-gonic.com/en/docs/examples/) for a guide o
 ├── go.sum
 ├── main.go         # Project entrypoint; sets up and runs Gin server
 ├── middleware/     # Gin middleware for logging, metrics, etc.
+│   ├── errors.go
 │   ├── logging.go
 │   ├── metrics.go
 │   └── security.go
