@@ -24,6 +24,7 @@ func main() {
 	// See: https://gin-gonic.com/en/docs/deployment/#dont-trust-all-proxies
 	if err := r.SetTrustedProxies(nil); err != nil {
 		logger.Error("Error setting trusted proxies", "error", err)
+		return
 	}
 
 	// Apply middleware
