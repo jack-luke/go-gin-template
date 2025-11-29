@@ -19,16 +19,23 @@ func Readiness() gin.HandlerFunc {
 		// e.g. ensure dependencies are connected & working
 
 		// MongoDB Example:
-		// 	if err = client.Ping(context.TODO(), readpref.Primary()); err != nil {
-		// 		c.String(http.StatusServiceUnavailable, "Database not connected")
-		// 		return
-		// 	}
+		// 		err := client.Ping(context.Background(), readpref.Primary())
+		// 		if err != nil {
+		// 			c.AbortWithError(
+		// 				http.StatusServiceUnavailable,
+		// 				fmt.Errorf("MongoDB ping failed: %v", err),
+		// 			)
+		// 			return
+		// 		}
 
 		// MQTT Example:
-		// 	if !client.IsConnectionOpen() {
-		//		c.String(http.StatusServiceUnavailable, "MQTT broker not connected")
-		// 		return
-		// 	}
+		// 		if !client.IsConnectionOpen() {
+		// 			c.AbortWithError(
+		// 				http.StatusServiceUnavailable,
+		// 				errors.New("MQTT broker not connected"),
+		// 			)
+		// 			return
+		// 		}
 
 		c.String(http.StatusOK, "OK")
 	}
