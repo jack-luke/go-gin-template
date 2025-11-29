@@ -27,17 +27,12 @@ See [Gin Docs - Examples](https://gin-gonic.com/en/docs/examples/) for a guide o
 └── README.md
 ```
 
-### Default Behaviour
-
-* The Gin server is started in release mode.
-* The Gin server is set to trust no proxies.
-* Kubernetes liveliness and readiness probes are mounted on `/healthz` and `/readyz` respectively. Checks should be added to the readiness probe as the app grows.
-* Security headers are applied to all requests.
-* Go structured logging used throughout, with key-value log format by default.
-* Basic Prometheus HTTP metrics on request count, latency and in-flight are collected, and made available on `/metrics`.
-
 ## Build
-All builds use [Chainguard's Static Base Image](https://images.chainguard.dev/directory/image/static/overview) for security.
+All container builds use [Chainguard's Static Base Image](https://images.chainguard.dev/directory/image/static/overview) for security.
+
+```
+go build . -o gin
+```
 
 ### Ko
 To build with [Ko](https://ko.build), pushing to the local Docker image store tagged as `gin:latest`.
@@ -51,6 +46,43 @@ Configure Ko build in the `.ko.yaml` file.
 ```bash
 docker build . -t gin:latest
 ```
+
+## Features
+
+* The Gin server is started in release mode.
+* The Gin server is set to trust no proxies.
+* Security headers are applied to all requests.
+* Error responses are returned to the client as JSON.
+
+### Endpoints
+| Path | Description |
+| --- | --- |
+| `/healthz` | Kubernetes liveliness probe; simply returns a 200 OK response |
+| `/readyz` | Kubernetes readiness probe; by default, returns a 200 OK response, and should be configured to include app readiness checks. |
+| `/metrics` | Prometheus metrics endpoint. Returns application metrics in Prometheus format. |
+
+### Logging
+All logging is done to STDOUT in a structured manner using the [Go slog library](https://pkg.go.dev/log/slog).
+
+HTTP requests are logged with the following fields:
+| Field | Type | Description | Example
+| --- | --- | --- | --- |
+| `time` | string | Timestamp in RFC 3339 format.| 2025-11-29T18:01:38.300Z |
+| `level` | int | Log severity level. | WARN |
+| `msg` | string | HTTP response code and its meaning. | HTTP 503 (Service Unavailable) |
+| `status` | int | HTTP response code. | 200 |
+| `method` | string | HTTP request method. | GET |
+| `path` | string | Request route. | /healthz |
+| `client_ip` | string | Client IP address. | 127.0.0.1 |
+| `duration` | string | Time taken for the request to complete. | 107.747µs | 
+| `error` | string | The error message, if there was one. | "Error #01: MQTT broker not connected\n" |
+
+### Metrics
+| Name | Type | Labels | Description |
+| --- | --- | --- | --- |
+| `http_requests_total` | Counter | method, route, status | Total number of HTTP requests. |
+| `http_request_duration_seconds` | Histogram | method, route, status | HTTP request duration in seconds. |
+| `http_in_flight_requests` | Gauge | | Number of requests currently being handled by the service. |
 
 ## Authors
 
