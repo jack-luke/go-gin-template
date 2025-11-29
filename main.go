@@ -1,6 +1,4 @@
 // A simple Gin app that implements all the required boilerplate for a production app.
-//
-//	This currently includes: strutured logging, metrics intrumentation, a K8s liveliness probe.
 package main
 
 import (
@@ -32,6 +30,7 @@ func main() {
 	r.Use(middleware.Slogger(logger))
 	r.Use(middleware.SecurityHeaders)
 	r.Use(middleware.PrometheusMetrics())
+	r.Use(middleware.ErrorHandler)
 
 	// Prometheus metrics endpoint
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
