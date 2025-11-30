@@ -57,7 +57,7 @@ docker build . -t gin:latest
 ### Endpoints
 | Path | Description |
 | --- | --- |
-| `/healthz` | Kubernetes liveliness probe; simply returns a 200 OK response |
+| `/healthz` | Kubernetes liveness probe; simply returns a 200 OK response |
 | `/readyz` | Kubernetes readiness probe; by default, returns a 200 OK response, and should be configured to include app readiness checks. |
 | `/metrics` | Prometheus metrics endpoint. Returns application metrics in Prometheus format. |
 

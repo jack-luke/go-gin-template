@@ -35,8 +35,8 @@ func main() {
 	// Prometheus metrics endpoint
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	// Kubernetes liveliness & readiness probes
-	r.GET("/healthz", controllers.Liveliness)
+	// Kubernetes liveness & readiness probes
+	r.GET("/healthz", controllers.Liveness)
 	r.GET("/readyz", controllers.Readiness())
 
 	logger.Info("Starting HTTP server")

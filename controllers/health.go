@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Liveliness acts as a Kubernetes liveliness probe on /healthz
-func Liveliness(c *gin.Context) {
+// Liveness acts as a Kubernetes liveness probe on /healthz
+func Liveness(c *gin.Context) {
 	c.String(http.StatusOK, "OK")
 }
 
