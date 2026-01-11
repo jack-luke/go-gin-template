@@ -49,7 +49,7 @@ func main() {
 	}
 	gin.SetMode(mode)
 
-	// 
+	// Create router with all routes & middleware
 	router, err := setupRouter()
 	if err != nil {
 		slog.Error("Router setup error", "error", err)
