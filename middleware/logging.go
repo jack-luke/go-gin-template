@@ -11,7 +11,7 @@ import (
 )
 
 // Slogger is a middleware that implements structured request logging via slog.
-func Slogger(logger *slog.Logger) gin.HandlerFunc {
+func Slogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
@@ -33,7 +33,7 @@ func Slogger(logger *slog.Logger) gin.HandlerFunc {
 			level = slog.LevelWarn
 		}
 
-		logger.LogAttrs(
+		slog.LogAttrs(
 			c.Request.Context(),
 			level,
 			fmt.Sprintf("HTTP %d (%s)", status, http.StatusText(status)),

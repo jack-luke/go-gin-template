@@ -1,13 +1,16 @@
 # Go Gin App
 
-A starter setup for a production Gin application, including structured logging, Prometheus HTTP metrics, Kubernetes health probes.
+A starter setup for a production Gin app, including: TLS & HTTP/3 support, 
+structured logging, Prometheus HTTP metrics, and Kubernetes health probes.
 
 ## Getting Started
 First, clone the project.
-New HTTP route handlers and middleware can be added to the `controllers/` and `middleware/` directories respectively.
-See [Gin Docs - Examples](https://gin-gonic.com/en/docs/examples/) for a guide on how to implement these and some of the features Gin offers. 
+New HTTP route handlers and middleware can be added to the `controllers/` and 
+`middleware/` directories respectively.
+See [Gin Docs - Examples](https://gin-gonic.com/en/docs/examples/) for a guide
+on how to implement these and some of the features Gin offers. 
 
-`main.go` is the main entrypoint, so new functionality is attached to the server here.
+`main.go` is the main entrypoint, so functionality is attached to the server here.
 
 ### Project Structure
 ```bash
@@ -35,7 +38,8 @@ go build . -o gin
 ```
 
 ### Ko
-To build with [Ko](https://ko.build), pushing to the local Docker image store tagged as `gin:latest`.
+To build with [Ko](https://ko.build), pushing to the local Docker image store 
+tagged as `gin:latest`.
 ```bash
 export KO_DOCKER_REPO=gin
 ko build --bare --local .
@@ -47,12 +51,14 @@ Configure Ko build in the `.ko.yaml` file.
 docker build . -t gin:latest
 ```
 
-## Features
-
-* The Gin server is started in release mode.
-* The Gin server is set to trust no proxies.
-* Security headers are applied to all requests.
-* Error responses are returned to the client as JSON.
+## Configuration
+| Variable | Default | Description |
+| --- | --- | --- |
+| PORT | `8080` | The port to serve the application on. |
+| GIN_MODE | `release` | Mode to start the Gin server in, available options: `release`, `debug`, `test`. |
+| GIN_TLS_CERT_FILE | | Path to a PEM-encoded TLS certificate file, with the CA chain concatenated if there is one. Leave unset to disable HTTPS. |
+| GIN_TLS_KEY_FILE | | Path to a PEM-encoded TLS key file. Leave unset to disable HTTPS. |
+| GIN_HTTP3_ENABLED | `true` | By default, running the application with TLS starts a listener for QUIC connections alongside the standard TCP one. Set to `false` to disable the extra listener. |
 
 ### Endpoints
 | Path | Description |
@@ -62,7 +68,8 @@ docker build . -t gin:latest
 | `/metrics` | Prometheus metrics endpoint. Returns application metrics in Prometheus format. |
 
 ### Logging
-All logging is done to STDOUT in a structured manner using the [Go slog library](https://pkg.go.dev/log/slog).
+All logging is done to STDOUT in a structured manner using the 
+[Go slog library](https://pkg.go.dev/log/slog).
 
 HTTP requests are logged with the following fields:
 | Field | Type | Description | Example
