@@ -1,6 +1,6 @@
 # Go Gin App
 
-A starter setup for a production Gin app, including: TLS & HTTP/3 support, 
+A starter setup for a production Gin app, including: TLS & HTTP/3 ready (just add certs!), 
 structured logging, Prometheus HTTP metrics, and Kubernetes health probes.
 
 ## Getting Started
