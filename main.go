@@ -22,7 +22,6 @@ func envDefault(key string, fallback string) string {
     return fallback	
 }
 
-
 // setupRouter creates a router with all middleware and routes attached
 func setupRouter() (*gin.Engine, error) {
 	r := gin.New()
@@ -53,7 +52,6 @@ func setupRouter() (*gin.Engine, error) {
 func main() {
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
 
-	// Set the server mode, with 'release' as the default
 	gin.SetMode(envDefault("GIN_MODE", "release"))
 
 	// Startup log
@@ -71,48 +69,41 @@ func main() {
 		return
 	}	
 
+	// Gather listener config
 	tlsKeyFile, keyExists := os.LookupEnv("GIN_TLS_KEY_FILE")
 	tlsCertFile, certExists := os.LookupEnv("GIN_TLS_CERT_FILE")
-
 	port := envDefault("PORT", "8080")
+	
+	// determine what listeners to run
+	tlsEnabled := certExists && keyExists
+	http3Enabled := os.Getenv("GIN_HTTP3_ENABLED") != "false"
 
-	// Start server with TLS if cert and key paths are set, else run on HTTP
-	if certExists && keyExists {
-
-		// Start a non-blocking QUIC listener unless HTTP/3 is disabled
-		if os.Getenv("GIN_HTTP3_ENABLED") != "false" {
-			slog.Info("Starting listener", 
-				"port", port,
-				"tls", "enabled", 
-				"transport", "quic", 
-				"protocols", "http/3", 
-			)
-			go func() {
-				if err := router.RunQUIC("", tlsCertFile, tlsKeyFile); err != nil {
-					slog.Error("QUIC listener error", "error", err)
-				}
-			}()
-		}
-
-		// Start a TCP listener with TLS
+	// Start a non-blocking QUIC listener unless HTTP/3 or TLS is disabled
+	if tlsEnabled && http3Enabled {
 		slog.Info("Starting listener", 
 			"port", port,
-			"tls", "enabled", 
-			"transport", "tcp", 
-			"protocols", "http/1.1,http/2", 
+			"tls_enabled", true, 
+			"transport", "quic", 
+			"protocols", "http/3", 
 		)
+		go func() {
+			if err := router.RunQUIC("", tlsCertFile, tlsKeyFile); err != nil {
+				slog.Error("QUIC listener error", "error", err)
+			}
+		}()
+	}
+
+	slog.Info("Starting listener", 
+		"port", port,
+		"tls_enabled", tlsEnabled,  
+		"transport", "tcp", 
+		"protocols", "http/1.1,http/2", 
+	)	
+	if tlsEnabled {
 		if err := router.RunTLS("", tlsCertFile, tlsKeyFile); err != nil {
 			slog.Error("TCP TLS listener error", "error", err)
 		}
-
 	} else {
-		// Start TCP listener without TLS
-		slog.Info("Starting listener", 
-			"port", port,
-			"tls", "disabled", 
-			"transport", "tcp", 
-			"protocols", "http/1.1,http/2", 
-		)
 		if err := router.Run(); err != nil {
 			slog.Error("TCP listener error", "error", err)
 		}
