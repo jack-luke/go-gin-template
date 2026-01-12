@@ -54,7 +54,7 @@ docker build . -t gin:latest
 ## Configuration
 | Variable | Default | Description |
 | --- | --- | --- |
-| PORT | `8080` | The port to serve the application on. |
+| PORT |`8080` | The port to serve the application on. |
 | GIN_MODE | `release` | Mode to start the Gin server in, available options: `release`, `debug`, `test`. |
 | GIN_TLS_CERT_FILE | | Path to a PEM-encoded TLS certificate file, with the CA chain concatenated if there is one. Leave unset to disable HTTPS. |
 | GIN_TLS_KEY_FILE | | Path to a PEM-encoded TLS key file. Leave unset to disable HTTPS. |

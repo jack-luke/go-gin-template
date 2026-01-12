@@ -6,11 +6,22 @@ import (
 	"log/slog"
 	"main/controllers"
 	"main/middleware"
+	"runtime/debug"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
+// envDefault takes an environment variable key and a default value, returning
+// the environment variable if set, else the default.
+func envDefault(key string, fallback string) string {
+    if value, exists := os.LookupEnv(key); exists {
+        return value
+    }
+    return fallback	
+}
+
 
 // setupRouter creates a router with all middleware and routes attached
 func setupRouter() (*gin.Engine, error) {
@@ -40,24 +51,30 @@ func setupRouter() (*gin.Engine, error) {
 }
 
 func main() {
-	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
 
 	// Set the server mode, with 'release' as the default
-	mode, exists := os.LookupEnv("GIN_MODE")
-	if !exists {
-		mode = "release"
-	}
-	gin.SetMode(mode)
+	gin.SetMode(envDefault("GIN_MODE", "release"))
+
+	// Startup log
+	buildInfo, _ := debug.ReadBuildInfo()
+	slog.Info("Go Gin Server", 
+		"go_version", buildInfo.GoVersion,
+		"gin_version", gin.Version,
+		"mode", gin.Mode(),
+	)
 
 	// Create router with all routes & middleware
 	router, err := setupRouter()
 	if err != nil {
 		slog.Error("Router setup error", "error", err)
 		return
-	}
+	}	
 
 	tlsKeyFile, keyExists := os.LookupEnv("GIN_TLS_KEY_FILE")
 	tlsCertFile, certExists := os.LookupEnv("GIN_TLS_CERT_FILE")
+
+	port := envDefault("PORT", "8080")
 
 	// Start server with TLS if cert and key paths are set, else run on HTTP
 	if certExists && keyExists {
@@ -65,7 +82,7 @@ func main() {
 		// Start a non-blocking QUIC listener unless HTTP/3 is disabled
 		if os.Getenv("GIN_HTTP3_ENABLED") != "false" {
 			slog.Info("Starting listener", 
-				"port", os.Getenv("PORT"),
+				"port", port,
 				"tls", "enabled", 
 				"transport", "quic", 
 				"protocols", "http/3", 
@@ -79,7 +96,7 @@ func main() {
 
 		// Start a TCP listener with TLS
 		slog.Info("Starting listener", 
-			"port", os.Getenv("PORT"),
+			"port", port,
 			"tls", "enabled", 
 			"transport", "tcp", 
 			"protocols", "http/1.1,http/2", 
@@ -91,7 +108,7 @@ func main() {
 	} else {
 		// Start TCP listener without TLS
 		slog.Info("Starting listener", 
-			"port", os.Getenv("PORT"),
+			"port", port,
 			"tls", "disabled", 
 			"transport", "tcp", 
 			"protocols", "http/1.1,http/2", 
