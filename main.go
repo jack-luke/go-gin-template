@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -32,12 +33,14 @@ func setupRouter() (*gin.Engine, error) {
 		return nil, fmt.Errorf("Error setting trusted proxies: %v", err)
 	}
 
-	// Apply middleware
-	r.Use(gin.Recovery())
-	r.Use(middleware.Slogger())
-	r.Use(middleware.SecurityHeaders)
-	r.Use(middleware.PrometheusMetrics(nil))
-	r.Use(middleware.ErrorHandler)
+	// Apply middleware (executed in order)
+	r.Use(
+		gin.Recovery(),
+		middleware.Slogger(),
+		middleware.ErrorHandler,
+		middleware.SecurityHeaders,
+		middleware.PrometheusMetrics(prometheus.DefaultRegisterer),
+	)
 
 	// Prometheus metrics endpoint
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
