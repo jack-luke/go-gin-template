@@ -46,7 +46,7 @@ func TestNoRoute(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/this-is-not-a-route", nil)
 	router.ServeHTTP(w, req)
 
-	// Verify not found status 
+	// Verify not found status
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
@@ -100,7 +100,7 @@ func TestError(t *testing.T) {
 	// Test that internal server error is returned
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 
-	// Test that the error is logged 
+	// Test that the error is logged
 	if !strings.Contains(buf.String(), errMsg) {
 		t.Fatalf("Log: \n %s \n did not contain error: %s", buf.String(), errMsg)
 	}
@@ -122,7 +122,7 @@ type RequestLog struct {
 }
 
 // TestLoggingFields that request logs have the fields and values expected by
-// downstream consumers. 
+// downstream consumers.
 func TestLoggingFields(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 

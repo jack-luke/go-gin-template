@@ -81,10 +81,6 @@ func main() {
 	tlsKeyFile, keyExists := os.LookupEnv("GIN_TLS_KEY_FILE")
 	tlsCertFile, certExists := os.LookupEnv("GIN_TLS_CERT_FILE")
 	port := envDefault("PORT", "8080")
-	
-	// determine what listeners to run
-	tlsEnabled := certExists && keyExists
-	http3Enabled := os.Getenv("GIN_HTTP3_ENABLED") != "false"
 
 	// determine what listeners to run
 	tlsEnabled := certExists && keyExists
