@@ -15,9 +15,9 @@ type metrics struct {
 	RequestsInFlight  prometheus.Gauge
 }
 
-// newMetrics creates new instances of Prometheus metrics objects.
+// NewMetrics creates new instances of Prometheus metrics objects.
 // This is called when the metrics middleware is instantiated.
-func newMetrics() *metrics {
+func NewMetrics() *metrics {
 	histogramBuckets := []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10}
 
 	httpRequestsTotal := prometheus.NewCounterVec(prometheus.CounterOpts{
@@ -46,16 +46,17 @@ func newMetrics() *metrics {
 	}
 }
 
-// PrometheusMetrics is a middleware that records HTTP metrics about requests.
-func PrometheusMetrics(reg prometheus.Registerer) gin.HandlerFunc {
-	// create and register Prometheus metrics
-	m := newMetrics()
+// RegisterMetrics registers all provided metrics to the specified registerer
+func RegisterMetrics(reg prometheus.Registerer, m *metrics) {
 	reg.MustRegister(
 		m.RequestDuration,
 		m.HTTPRequestsTotal,
 		m.RequestsInFlight,
 	)
+}
 
+// PrometheusMetrics is a middleware that records HTTP metrics about requests.
+func PrometheusMetrics(m *metrics) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		m.RequestsInFlight.Inc() // mark request as in flight
