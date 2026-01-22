@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"main/controllers"
 	"main/middleware"
-	"runtime/debug"
 	"os"
+	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
@@ -17,10 +17,10 @@ import (
 // envDefault takes an environment variable key and a default value, returning
 // the environment variable if set, else the default.
 func envDefault(key string, fallback string) string {
-    if value, exists := os.LookupEnv(key); exists {
-        return value
-    }
-    return fallback	
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return fallback
 }
 
 // setupRouter creates a router with all middleware and routes attached
@@ -33,17 +33,22 @@ func setupRouter() (*gin.Engine, error) {
 		return nil, fmt.Errorf("Error setting trusted proxies: %v", err)
 	}
 
+	// Setup new Prometheus metrics and registry
+	reg := prometheus.NewRegistry()
+	metrics := middleware.NewMetrics()
+	middleware.RegisterMetrics(reg, metrics)
+
 	// Apply middleware (executed in order)
 	r.Use(
 		gin.Recovery(),
 		middleware.Slogger(),
 		middleware.ErrorHandler,
 		middleware.SecurityHeaders,
-		middleware.PrometheusMetrics(prometheus.DefaultRegisterer),
+		middleware.PrometheusMetrics(metrics),
 	)
 
 	// Prometheus metrics endpoint
-	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	r.GET("/metrics", gin.WrapH(promhttp.HandlerFor(reg, promhttp.HandlerOpts{})))
 
 	// Kubernetes liveness & readiness probes
 	r.GET("/healthz", controllers.Liveness)
@@ -59,7 +64,7 @@ func main() {
 
 	// Startup log
 	buildInfo, _ := debug.ReadBuildInfo()
-	slog.Info("Go Gin Server", 
+	slog.Info("Go Gin Server",
 		"go_version", buildInfo.GoVersion,
 		"gin_version", gin.Version,
 		"mode", gin.Mode(),
@@ -70,7 +75,7 @@ func main() {
 	if err != nil {
 		slog.Error("Router setup error", "error", err)
 		return
-	}	
+	}
 
 	// Gather listener config
 	tlsKeyFile, keyExists := os.LookupEnv("GIN_TLS_KEY_FILE")
@@ -81,13 +86,17 @@ func main() {
 	tlsEnabled := certExists && keyExists
 	http3Enabled := os.Getenv("GIN_HTTP3_ENABLED") != "false"
 
+	// determine what listeners to run
+	tlsEnabled := certExists && keyExists
+	http3Enabled := os.Getenv("GIN_HTTP3_ENABLED") != "false"
+
 	// Start a non-blocking QUIC listener unless HTTP/3 or TLS is disabled
 	if tlsEnabled && http3Enabled {
-		slog.Info("Starting listener", 
+		slog.Info("Starting listener",
 			"port", port,
-			"tls_enabled", true, 
-			"transport", "quic", 
-			"protocols", "http/3", 
+			"tls_enabled", true,
+			"transport", "quic",
+			"protocols", "http/3",
 		)
 		go func() {
 			if err := router.RunQUIC("", tlsCertFile, tlsKeyFile); err != nil {
@@ -96,12 +105,12 @@ func main() {
 		}()
 	}
 
-	slog.Info("Starting listener", 
+	slog.Info("Starting listener",
 		"port", port,
-		"tls_enabled", tlsEnabled,  
-		"transport", "tcp", 
-		"protocols", "http/1.1,http/2", 
-	)	
+		"tls_enabled", tlsEnabled,
+		"transport", "tcp",
+		"protocols", "http/1.1,http/2",
+	)
 	if tlsEnabled {
 		if err := router.RunTLS("", tlsCertFile, tlsKeyFile); err != nil {
 			slog.Error("TCP TLS listener error", "error", err)
