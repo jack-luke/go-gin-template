@@ -60,14 +60,14 @@ docker build . -t gin:latest
 | GIN_TLS_KEY_FILE | | Path to a PEM-encoded TLS key file. Leave unset to disable HTTPS. |
 | GIN_HTTP3_ENABLED | `true` | By default, running the application with TLS starts a listener for QUIC connections alongside the standard TCP one. Set to `false` to disable the extra listener. |
 
-### Endpoints
+## Endpoints
 | Path | Description |
 | --- | --- |
 | `/healthz` | Kubernetes liveness probe; simply returns a 200 OK response |
 | `/readyz` | Kubernetes readiness probe; by default, returns a 200 OK response, and should be configured to include app readiness checks. |
 | `/metrics` | Prometheus metrics endpoint. Returns application metrics in Prometheus format. |
 
-### Logging
+## Logging
 All logging is done to STDOUT in a structured manner using the 
 [Go slog library](https://pkg.go.dev/log/slog).
 
@@ -93,16 +93,12 @@ Prometheus metrics are recorded using the default registry.
 | `http_request_duration_seconds` | Histogram | method, route, status | HTTP request duration in seconds. |
 | `http_in_flight_requests` | Gauge | | Number of requests currently being handled by the service. |
 
-#### Using a Non-default Registry
-```go
-// create new registry
-reg := prometheus.NewRegistry()
+## Tests
 
-// pass the registerer to the middleware
-r.Use(middleware.PrometheusMetrics(reg))
-
-// attach the registry to the metrics endpoint
-r.GET("/metrics", gin.WrapH(promhttp.HandlerFor(reg, promhttp.HandlerOpts{})))
+A suite of smoke tests verifying that healthchecks, errors, panics, and logging
+are functioning correctly are included.
+```bash
+go test *.go
 ```
 
 ## Authors
